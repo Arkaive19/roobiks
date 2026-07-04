@@ -1,0 +1,12 @@
+html,
+body {
+  height: 100dvh;
+  width: 100dvw;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+#roobiks {
+  display: block;
+}
