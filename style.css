@@ -9,8 +9,10 @@ body {
   margin: 0;
   border: 0;
   background-color: #101010;
+  overflow: hidden;
 }
 
 #roobiks {
   display: block;
+  overflow-y: hidden;
 }
