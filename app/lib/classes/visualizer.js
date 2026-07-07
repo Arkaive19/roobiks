@@ -221,12 +221,13 @@ class visualizer3d {
       x: (f * x) / z,
       y: (f * y) / z,
     };
+    this.canvasEl.getContext("2d");
   };
   cameraTransform = ({ x, y, z }) => {
     /*In my time making this, this is byfar the coolest maths i have had to do.
     Basically, the camera is ALWAYS the center of the world at all times. Even though the
     relative projection of the world is the same, when we move; EVERYTHING moves.
-
+z
     basically;
       move mouse left right --> rotation in XZ plane
       move mouse up down --> rotation in YZ plane

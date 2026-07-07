@@ -1,20 +1,24 @@
-# ROobiks
+# Roobiks
 
-A purely 2d graphical interpreted 3d rubiks cube solving app made with features like freecam
+A Javascript Software 3D renderer!
 
 ## Overview
 
 Roobiks is a personal project ive been wanting to try to simualte how 3d graphics is actually rendered. [@TSCODING](https://www.youtube.com/watch?v=qjWkNZ0SXfo)
 
-**Roobiks** solves this by using a fast, SQLite-backed tag system instead of relying solely on folders. Organize your files with as many tags as you need and find them instantly without creating duplicates.
+**Roobiks** is a greater implementation including simple shading etc
 
 ## Features
 
-- Freecam
-- Very well documented scripts explaining in detail whats happening
-- Universally working with size repositioning.
-- A self solve option.
-- Can visualize methods.
+- Perspective projection
+- Camera system
+- Mouse-look
+- Backface culling
+- Lambert lighting
+- Face sorting
+- Mesh rendering
+- Rubik's Cube demo
+- Well documented steps inside scripts for each feature and method
 
 ## Built for Hack Club Stardance
 
@@ -31,5 +35,13 @@ To be transparent, AI was used only as a development aid for:
 The application's design, implementation, features, and overall architecture were created by me.
 
 ## Installation
+
+installation is very easy and simple; just clone the repo and serve with either
+
+```zsh
+npx serve
+```
+
+or other serving tools, or more conviniently check my project out the github Repo
 
 Currently roobiks is only a concept, in the near future i could ship it as a desktop electron app to play around with!
