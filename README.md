@@ -1,0 +1,47 @@
+# Roobiks
+
+A Javascript Software 3D renderer!
+
+## Overview
+
+Roobiks is a personal project ive been wanting to try to simualte how 3d graphics is actually rendered. [@TSCODING](https://www.youtube.com/watch?v=qjWkNZ0SXfo)
+
+**Roobiks** is a greater implementation including simple shading etc
+
+## Features
+
+- Perspective projection
+- Camera system
+- Mouse-look
+- Backface culling
+- Lambert lighting
+- Face sorting
+- Mesh rendering
+- Rubik's Cube demo
+- Well documented steps inside scripts for each feature and method
+
+## Built for Hack Club Stardance
+
+Arkaive was built as part of **Hack Club Stardance**, where the goal was to create and ship a real project from start to finish. The project was an opportunity to learn more about building CLI applications, working with SQLite, and publishing packages to npm.
+
+## AI Usage
+
+To be transparent, AI was used only as a development aid for:
+
+- Looking up html5 canvas queries and syntax
+- Debugging issues during development
+- Researching actual cubing methods, algorithms and theory.
+
+The application's design, implementation, features, and overall architecture were created by me.
+
+## Installation
+
+installation is very easy and simple; just clone the repo and serve with either
+
+```zsh
+npx serve
+```
+
+or other serving tools, or more conviniently check my project out the github Repo
+
+Currently roobiks is only a concept, in the near future i could ship it as a desktop electron app to play around with!
