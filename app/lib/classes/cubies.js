@@ -57,18 +57,30 @@ so a rubiks cube can be formed later */
    */
   getFaces() {
     const faces = [];
-    if (this.faces.back)
-      faces.push({ indices: [3, 2, 1, 0], color: this.faces.back });
-    if (this.faces.front)
-      faces.push({ indices: [4, 5, 6, 7], color: this.faces.front });
-    if (this.faces.bottom)
-      faces.push({ indices: [0, 1, 5, 4], color: this.faces.bottom });
-    if (this.faces.top)
-      faces.push({ indices: [7, 6, 2, 3], color: this.faces.top });
-    if (this.faces.left)
-      faces.push({ indices: [4, 7, 3, 0], color: this.faces.left });
-    if (this.faces.right)
-      faces.push({ indices: [1, 2, 6, 5], color: this.faces.right });
+    if (this.faces.back) {
+      faces.push({ indices: [3, 2, 1], color: this.faces.back });
+      faces.push({ indices: [3, 1, 0], color: this.faces.back });
+    }
+    if (this.faces.front) {
+      faces.push({ indices: [4, 5, 6], color: this.faces.front });
+      faces.push({ indices: [4, 6, 7], color: this.faces.front });
+    }
+    if (this.faces.bottom) {
+      faces.push({ indices: [0, 1, 5], color: this.faces.bottom });
+      faces.push({ indices: [0, 5, 4], color: this.faces.bottom });
+    }
+    if (this.faces.top) {
+      faces.push({ indices: [7, 6, 2], color: this.faces.top });
+      faces.push({ indices: [7, 2, 3], color: this.faces.top });
+    }
+    if (this.faces.left) {
+      faces.push({ indices: [4, 7, 3], color: this.faces.left });
+      faces.push({ indices: [4, 3, 0], color: this.faces.left });
+    }
+    if (this.faces.right) {
+      faces.push({ indices: [1, 2, 6], color: this.faces.right });
+      faces.push({ indices: [1, 6, 5], color: this.faces.right });
+    }
     return faces;
   }
 }
