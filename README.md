@@ -2,6 +2,17 @@
 
 A Javascript Software 3D renderer!
 
+Click on the canvas to start moving around,
+WASD and mouse to look around.
+1-R;
+2-L;
+3-U;
+4-D;
+5-F;
+6-B;
+
+press shift and the numerals to do a ' move. SHIFT+1(!)=>R' etc
+
 ## Overview
 
 Roobiks is a personal project ive been wanting to try to simualte how 3d graphics is actually rendered. [@TSCODING](https://www.youtube.com/watch?v=qjWkNZ0SXfo)
