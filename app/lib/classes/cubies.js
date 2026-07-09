@@ -91,6 +91,7 @@ export default class Roobiks {
     /*The generate function creates the cubelets, and stores it in a global class array
     But the more interesting variable is currentMove. This is ESSENTIAL for the rotation animation */
     this.cubelets = [];
+    this.retrace = [];
     this.currentMove = null;
     this.generate();
   }
@@ -163,6 +164,7 @@ export default class Roobiks {
 
     const m = moves[move];
     if (!m) return;
+    this.retrace.push(move);
     /*We setup the currently done move globally */
     this.currentMove = {
       axis: m.axis,
@@ -325,5 +327,38 @@ if not moving give stationary */
     }
 
     return { rotation: rot, pivot };
+  }
+  reset() {
+    this.cubelets.length = 0;
+    this.retrace = [];
+    this.currentMove = null;
+    this.generate();
+  }
+
+  steps() {
+    const inverseMoves = {
+      R: "R'",
+      "R'": "R",
+      L: "L'",
+      "L'": "L",
+      U: "U'",
+      "U'": "U",
+      D: "D'",
+      "D'": "D",
+      F: "F'",
+      "F'": "F",
+      B: "B'",
+      "B'": "B",
+    };
+    const solution = this.retrace.map((e) => inverseMoves[e]).reverse();
+    return solution;
+  }
+  async solve() {
+    const solution = this.steps();
+    for (const move of solution) {
+      this.rotate(move);
+      while (this.currentMove) await new Promise((r) => setTimeout(r, 10));
+      await new Promise((r) => setTimeout(r, 100));
+    }
   }
 }

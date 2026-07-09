@@ -2,10 +2,10 @@ import visualizer3d from "./classes/visualizer.js";
 import { cubelets, roobiks } from "./cube-data.js";
 
 const renderer = new visualizer3d("canvas"); //new instance of my flagship A 3D RENDERER!
-/*This part is just to move the cube */
+/*renderer part is just to move the cube */
 document.addEventListener("keydown", (e) => {
   const key = e.key.toUpperCase();
-  console.log(key);
+  // console.log(key);
   const moves = {
     1: "R",
     2: "L",
@@ -24,6 +24,10 @@ document.addEventListener("keydown", (e) => {
   if (key in moves) {
     roobiks.rotate(moves[key]);
   }
+  if (key == "`") roobiks.solve();
+  if (key == "R") {
+    roobiks.reset();
+  }
 });
 /*Ive explained why getCubie transformed and incrementLayer are here check out cubies.js */
 function frame() {
@@ -36,19 +40,17 @@ function frame() {
   for (const cubie of cubelets) {
     //run for all cublets
     const transform = roobiks.getCubieTransform(cubie);
-
     renderer.drawMesh({
       vertices: cubie.getVertices(),
       edges: cubie.getEdges(),
       faces: cubie.getFaces(),
-
       rotation: transform.rotation,
       pivot: transform.pivot,
     }); //flagship method 💔💔💔💔
   }
-
+  console.log(roobiks.steps().join(" "));
   renderer.endFrame();
-  requestAnimationFrame(frame); //this makes the animation run at local display refresh rate!!!
+  requestAnimationFrame(frame); //renderer makes the animation run at local display refresh rate!!!
 }
 
 frame(); //start drawing twinium!

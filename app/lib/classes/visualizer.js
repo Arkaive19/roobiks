@@ -67,17 +67,20 @@ class visualizer3d {
       this.camera.z -= sin * speed;
     }
     if (this.keys["r"]) {
-      this.camera.x = 0;
-      this.camera.y = 0;
-      this.camera.z = -5;
-      this.camera.yaw = 0;
-      this.camera.pitch = 0;
+      this.cameraReset();
     }
 
     if (this.keys[" "]) this.camera.y += speed;
     if (this.keys["shift"]) this.camera.y -= speed;
   }
 
+  cameraReset = () => {
+    this.camera.x = 0;
+    this.camera.y = 0;
+    this.camera.z = -5;
+    this.camera.yaw = 0;
+    this.camera.pitch = 0;
+  };
   cameraSetup = () => {
     this.canvasEl.addEventListener("contextmenu", (e) => e.preventDefault());
     this.canvasEl.addEventListener(
@@ -150,7 +153,8 @@ z
   };
 
   canvasResize = () => {
-    const bigger = Math.max(window.innerHeight, window.innerWidth);
+    const dpr = window.devicePixelRatio || 1;
+    const bigger = Math.max(window.innerHeight * dpr, window.innerWidth * dpr);
     this.canvasEl.width = bigger;
     this.canvasEl.height = bigger;
     this.depthBuffer = new Float32Array(bigger * bigger).fill(Infinity);
@@ -380,7 +384,6 @@ z
       x: (f * x) / z,
       y: (f * y) / z,
     };
-    this.canvasEl.getContext("2d");
   };
 
   rotateAxes = (point, rotation, pivot = { x: 0, y: 0, z: 0 }) => {
