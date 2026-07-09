@@ -25,18 +25,15 @@ document.addEventListener("keydown", (e) => {
     roobiks.rotate(moves[key]);
   }
   if (key == "`") roobiks.solve();
-  if (key == "R") {
-    roobiks.reset();
-  }
+  if (key == "R") roobiks.reset();
+  if (key === "V") renderer.wireframe = !renderer.wireframe;
 });
 /*Ive explained why getCubie transformed and incrementLayer are here check out cubies.js */
 function frame() {
   roobiks.incrementLayer(); //increments layer
   renderer.updateCamera(); //updates camera
   renderer.clear(); //clears canvas
-
   renderer.startFrame(); //check visualizer.js for more info
-
   for (const cubie of cubelets) {
     //run for all cublets
     const transform = roobiks.getCubieTransform(cubie);

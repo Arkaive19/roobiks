@@ -12,7 +12,7 @@ class visualizer3d {
       z: -1,
       ambient: 0.25,
     };
-
+    this.wireframe = false;
     this.depthBuffer;
     this.frameBuffer;
     this.imageData;
@@ -167,24 +167,57 @@ z
     this.depthBuffer.fill(Infinity);
   }
 
-  point = ({ x, y }) => {
-    /* Standard way to draw a point on this.canvas
-  the size/2 thingy is to make points center be where we want it :D
-  */
+  point = ({ x, y, z }) => {
     const size = 10;
-    this.canvas.fillStyle = "#18d583";
-    this.canvas.fillRect(x - size / 2, y - size / 2, size, size);
+
+    const ix = Math.floor(x);
+    const iy = Math.floor(y);
+
+    const index = iy * this.canvasEl.width + ix;
+
+    if (z < this.depthBuffer[index]) {
+      this.depthBuffer[index] = z;
+
+      const pixel = index * 4;
+
+      this.frameBuffer[pixel] = 24;
+      this.frameBuffer[pixel + 1] = 213;
+      this.frameBuffer[pixel + 2] = 131;
+      this.frameBuffer[pixel + 3] = 255;
+    }
   };
 
-  line = (p1, p2) => {
-    /* wireframes are cool twan */
-    this.canvas.lineWidth = 3;
-    this.canvas.strokeStyle = "#18d583";
-    this.canvas.beginPath();
-    this.canvas.moveTo(p1.x, p1.y);
-    this.canvas.lineTo(p2.x, p2.y);
-    this.canvas.stroke();
-  };
+  line(p1, p2) {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+
+    const steps = Math.max(Math.abs(dx), Math.abs(dy));
+
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+
+      const x = p1.x + dx * t;
+      const y = p1.y + dy * t;
+
+      const z = p1.z + (p2.z - p1.z) * t;
+
+      const ix = Math.floor(x);
+      const iy = Math.floor(y);
+
+      const index = iy * this.canvasEl.width + ix;
+
+      if (z < this.depthBuffer[index]) {
+        this.depthBuffer[index] = z;
+
+        const pixel = index * 4;
+
+        this.frameBuffer[pixel] = 24;
+        this.frameBuffer[pixel + 1] = 213;
+        this.frameBuffer[pixel + 2] = 131;
+        this.frameBuffer[pixel + 3] = 255;
+      }
+    }
+  }
 
   face(p1, p2, p3, red, green, blue) {
     /*Implementing z-buffering, the entire drawing process has to change.

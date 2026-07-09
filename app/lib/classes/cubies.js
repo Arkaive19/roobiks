@@ -93,6 +93,7 @@ export default class Roobiks {
     this.cubelets = [];
     this.retrace = [];
     this.currentMove = null;
+    this.stationary = true;
     this.generate();
   }
 
@@ -332,6 +333,7 @@ if not moving give stationary */
     this.cubelets.length = 0;
     this.retrace = [];
     this.currentMove = null;
+    this.stationary = true;
     this.generate();
   }
 
@@ -354,10 +356,13 @@ if not moving give stationary */
     return solution;
   }
   async solve() {
+    this.stationary = false;
     const solution = this.steps();
     for (const move of solution) {
+      if (this.stationary) return;
       this.rotate(move);
       while (this.currentMove) await new Promise((r) => setTimeout(r, 10));
+
       await new Promise((r) => setTimeout(r, 100));
     }
   }
