@@ -33,7 +33,7 @@ Roobiks is a personal project ive been wanting to try to simualte how 3d graphic
 
 ## Built for Hack Club Stardance
 
-Arkaive was built as part of **Hack Club Stardance**, where the goal was to create and ship a real project from start to finish. The project was an opportunity to learn more about building CLI applications, working with SQLite, and publishing packages to npm.
+Arkaive was built as part of **Hack Club Stardance**, where the goal was to create and ship a real project from start to finish. The project was an opportunity to learn more about rasterizations, GPU rendering processes and the math used to make it possible!
 
 ## AI Usage
 
