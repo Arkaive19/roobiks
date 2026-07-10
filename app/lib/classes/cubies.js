@@ -204,7 +204,7 @@ export default class Roobiks {
        --> YES after the 2nd last rotation we FINISH the turn by snapping position and changing stickers.
        hence its a clever illusion! */
       this.finishTurn();
-      this.currentMove = null;
+      // this.currentMove = null;
       return;
     }
   }
@@ -297,6 +297,7 @@ export default class Roobiks {
         cubie.faces.back = f.back;
       }
     }
+
     this.currentMove = null;
   }
 
@@ -366,5 +367,25 @@ if not moving give stationary */
       await new Promise((r) => setTimeout(r, 100));
     }
     this.retrace = [];
+    this.stationary = true;
+  }
+
+  async scramble() {
+    const scrambleOrder = [];
+    const moves = ["R", "L", "U", "D", "F", "B"];
+    for (let i = 0; i < 20; i++) {
+      let order = moves[Math.floor(Math.random() * 6)];
+      order += Math.random() < 0.5 ? "'" : "";
+      scrambleOrder.push(order);
+    }
+    this.stationary = false;
+    for (const move of scrambleOrder) {
+      if (this.stationary) return;
+      this.rotate(move);
+      while (this.currentMove) await new Promise((r) => setTimeout(r, 10));
+
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    this.stationary = true;
   }
 }

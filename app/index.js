@@ -1,3 +1,4 @@
+import { roobiks } from "./lib/cube-data.js";
 let visible = false;
 let hexAnimated = false;
 let fadeOut = false;
@@ -11,7 +12,7 @@ const timing = {
 
 document.addEventListener("DOMContentLoaded", () => {
   const overlay = document.querySelector(".overlay");
-  const content = document.querySelector("#roobiks");
+  const content = document.querySelector(".content");
   const polygon = document.querySelector(".hex-border polygon");
   polygon.getBoundingClientRect();
   setTimeout(() => {
@@ -33,4 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Animation finished");
     content.style.display = "block";
   }, timing.finish);
+});
+
+document.querySelector(".solve").addEventListener("click", () => {
+  roobiks.solve();
+});
+document.querySelector(".scramble").addEventListener("click", () => {
+  roobiks.scramble();
 });
