@@ -13,6 +13,21 @@ body {
 }
 
 #roobiks {
-  display: block;
+  display: none;
   overflow-y: hidden;
+}
+
+@media (orientation: portrait) {
+  #roobiks {
+    overflow-x: hidden;
+  }
+}
+
+.btns {
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 20px;
+  left: 20px;
 }

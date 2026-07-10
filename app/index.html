@@ -7,8 +7,37 @@
     <script type="module" src="index.js" defer></script>
     <script type="module" src="./lib/freecam.js" defer></script>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="overlay.css" />
   </head>
   <body>
-    <canvas id="roobiks"></canvas>
+    <div class="overlay cflex">
+      <div class="logo-wrapper">
+        <svg class="hex-border" viewBox="0 0 160 160" width="160" height="160">
+          <polygon
+            points="80,150 21,115 21,45 80,10 139,45 139,115 80,150"
+            style="
+              stroke-dashoffset: 420;
+              stroke-dasharray: 420;
+              stroke: #2472c8;
+              stroke-width: 4;
+              fill: none;
+              transition: stroke-dashoffset 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+            "
+          />
+        </svg>
+
+        <img src="./assets/logo.png" alt="Logo" class="landing-logo" />
+      </div>
+    </div>
+    <div class="content">
+      <canvas id="roobiks"></canvas>
+      <div class="btns">
+        <button class="settings">Settings</button>
+        <button class="keybinds">Keybinds</button>
+        <button class="information">Information</button>
+        <button class="scramble">Scramble</button>
+        <button class="solve">Solve</button>
+      </div>
+    </div>
   </body>
 </html>

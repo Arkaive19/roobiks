@@ -1,0 +1,60 @@
+.overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  left: 0;
+
+  height: 100vh;
+  width: 100vw;
+
+  background-color: color-mix(in srgb, #101010 100%, transparent);
+  opacity: 0;
+  filter: blur(10px);
+
+  transform: scale(1);
+  transition:
+    opacity 1s cubic-bezier(0.77, 0, 0.175, 1),
+    filter 1s cubic-bezier(0.77, 0, 0.175, 1),
+    transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.overlay.visible {
+  opacity: 1;
+  filter: blur(0px);
+}
+
+.overlay.fade-out {
+  opacity: 0;
+  filter: blur(6px);
+  pointer-events: none;
+  transform: scale(0.0001);
+}
+
+.logo-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.hex-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 160px;
+  height: 160px;
+  pointer-events: none;
+}
+
+.landing-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
