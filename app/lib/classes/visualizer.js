@@ -209,7 +209,14 @@ z
 
       const ix = Math.floor(x);
       const iy = Math.floor(y);
-
+      if (
+        ix < 0 ||
+        ix >= this.canvasEl.width ||
+        iy < 0 ||
+        iy >= this.canvasEl.height
+      ) {
+        continue;
+      }
       const index = iy * this.canvasEl.width + ix;
 
       if (z < this.depthBuffer[index]) {
@@ -637,6 +644,14 @@ z
     for (let i = 0; i < faces.length; i++) {
       const face = faces[i];
       const f = face.indices;
+      if (
+        f[0] >= vertices.length ||
+        f[1] >= vertices.length ||
+        f[2] >= vertices.length
+      ) {
+        console.warn("Invalid face index", face);
+        continue;
+      }
       const intersectionNearFace = (vIn, vOut) => {
         /*lets make the intersection!
         as we know the near plane is NEAR=0.01
@@ -769,7 +784,7 @@ z
         const inV2 = insideNearPlane[1];
 
         const outV1 = intersectionNearFace(inV1, outsideNearPlane[0]);
-        const outV2 = intersectionNearFace(inV2, outsideNearPlane[1]);
+        const outV2 = intersectionNearFace(inV2, outsideNearPlane[0]);
 
         const pIn1 = toScreen(inV1);
         const pIn2 = toScreen(inV2);
@@ -798,15 +813,15 @@ z
     vertices = [],
     edges = [],
     translation = { x: 0, y: 0, z: 0 },
-    rotation = {
-      x: 0,
-      y: 0,
-      z: 0,
-    },
+    rotation = { x: 0, y: 0, z: 0 },
     pivot = { x: 0, y: 0, z: 0 },
   }) {
     const cam = this.camera;
     const NEAR = 0.01;
+
+    const project = this.project.bind(this);
+    const graph = this.cartesianGrapher.bind(this);
+    const line = this.line.bind(this);
 
     const cYaw = Math.cos(cam.yaw);
     const sYaw = Math.sin(cam.yaw);
@@ -820,54 +835,51 @@ z
     const cz = Math.cos(rotation.z);
     const sz = Math.sin(rotation.z);
 
-    const px = pivot.x ?? 0;
-    const py = pivot.y ?? 0;
-    const pz = pivot.z ?? 0;
+    const px = pivot.x || 0;
+    const py = pivot.y || 0;
+    const pz = pivot.z || 0;
 
     const tx = translation.x;
     const ty = translation.y;
     const tz = translation.z;
 
+    const camX = cam.x;
+    const camY = cam.y;
+    const camZ = cam.z;
+
     const viewX = new Float32Array(vertices.length);
     const viewY = new Float32Array(vertices.length);
     const viewZ = new Float32Array(vertices.length);
 
-    // transform vertices into camera space
-    for (let i = 0; i < vertices.length; i++) {
+    for (let i = 0, n = vertices.length; i < n; i++) {
       let { x, y, z } = vertices[i];
       let t;
+      // console.log(this.depthBuffer);
 
-      // pivot offset
       x -= px;
       y -= py;
       z -= pz;
 
-      // X rotation
       t = y;
       y = t * cx - z * sx;
       z = t * sx + z * cx;
 
-      // Y rotation
       t = x;
       x = t * cy + z * sy;
       z = -t * sy + z * cy;
 
-      // Z rotation
       t = x;
       x = t * cz - y * sz;
       y = t * sz + y * cz;
 
-      // translation + camera movement
-      x += px + tx - cam.x;
-      y += py + ty - cam.y;
-      z += pz + tz - cam.z;
+      x += px + tx - camX;
+      y += py + ty - camY;
+      z += pz + tz - camZ;
 
-      // camera yaw
       t = x;
       x = t * cYaw - z * sYaw;
       z = t * sYaw + z * cYaw;
 
-      // camera pitch
       t = y;
       y = t * cPitch - z * sPitch;
       z = t * sPitch + z * cPitch;
@@ -877,67 +889,50 @@ z
       viewZ[i] = z;
     }
 
-    const projectToScreen = (v) => {
-      const projected = this.project(v.x, v.y, v.z);
+    for (let i = 0, n = edges.length; i < n; i++) {
+      const edge = edges[i];
+      const a = edge[0];
+      const b = edge[1];
 
-      return {
-        ...this.cartesianGrapher(projected),
-        z: v.z,
-      };
-    };
+      let ax = viewX[a];
+      let ay = viewY[a];
+      let az = viewZ[a];
 
-    const clipLine = (a, b) => {
-      const aInside = a.z >= NEAR;
-      const bInside = b.z >= NEAR;
+      let bx = viewX[b];
+      let by = viewY[b];
+      let bz = viewZ[b];
 
-      if (!aInside && !bInside) {
-        return null;
+      const aInside = az >= NEAR;
+      const bInside = bz >= NEAR;
+
+      // console.log(a, b);
+      if (!aInside && !bInside) continue;
+
+      if (aInside !== bInside) {
+        const t = (NEAR - az) / (bz - az);
+
+        const ix = ax + (bx - ax) * t;
+        const iy = ay + (by - ay) * t;
+        // console.log(ix, iy);
+
+        if (aInside) {
+          bx = ix;
+          by = iy;
+          bz = NEAR;
+        } else {
+          ax = ix;
+          ay = iy;
+          az = NEAR;
+        }
       }
 
-      if (aInside && bInside) {
-        return [a, b];
-      }
+      const p1 = graph(project(ax, ay, az));
+      const p2 = graph(project(bx, by, bz));
 
-      const dz = b.z - a.z;
-
-      if (Math.abs(dz) < 0.000001) {
-        return null;
-      }
-
-      const t = (NEAR - a.z) / dz;
-
-      const intersection = {
-        x: a.x + t * (b.x - a.x),
-        y: a.y + t * (b.y - a.y),
-        z: NEAR,
-      };
-
-      return aInside ? [a, intersection] : [intersection, b];
-    };
-
-    for (let i = 0; i < edges.length; i++) {
-      const [a, b] = edges[i];
-
-      const v1 = {
-        x: viewX[a],
-        y: viewY[a],
-        z: viewZ[a],
-      };
-
-      const v2 = {
-        x: viewX[b],
-        y: viewY[b],
-        z: viewZ[b],
-      };
-
-      const clipped = clipLine(v1, v2);
-
-      if (!clipped) continue;
-
-      const p1 = projectToScreen(clipped[0]);
-      const p2 = projectToScreen(clipped[1]);
-
-      this.line(p1, p2);
+      p1.z = az;
+      p2.z = bz;
+      // console.log(p1, p2);
+      line(p1, p2);
     }
   }
 
