@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }, timing.disappear);
 
   setTimeout(() => {
-    console.log("Animation finished");
+    // console.log("Animation finished");
     content.style.display = "block";
   }, timing.finish);
 });
