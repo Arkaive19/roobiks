@@ -190,7 +190,11 @@ function initializeKeybinds() {
   addStaticRow(tbody, "Enable Wireframe", "V");
 
   Object.entries(cubieKeybinds).forEach(([move]) => {
-    addEditableRow(tbody, `Perform ${move}`, cubieKeybinds, move);
+    if (move != "`") {
+      addEditableRow(tbody, `Perform ${move}`, cubieKeybinds, move);
+    } else {
+      addEditableRow(tbody, `Perform solve`, cubieKeybinds, move);
+    }
   });
 }
 
