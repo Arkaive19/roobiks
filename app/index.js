@@ -1,4 +1,4 @@
-import { roobiks } from "./lib/cube-data.js";
+import { roobiks, modalCubie, setModalCubie } from "./lib/cube-data.js";
 let visible = false;
 let hexAnimated = false;
 let fadeOut = false;
@@ -39,6 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.querySelector(".solve").addEventListener("click", () => {
   roobiks.solve();
+});
+document.querySelector(".model").addEventListener("click", () => {
+  modalCubie == "cube" ? setModalCubie("penguin") : setModalCubie("cube");
+  console.log(modalCubie);
 });
 document.querySelector(".scramble").addEventListener("click", () => {
   roobiks.scramble();
