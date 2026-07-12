@@ -1,7 +1,24 @@
 import visualizer3d from "./classes/visualizer.js";
-import { cubelets, roobiks, vs, fs } from "./cube-data.js";
+import {
+  renderer,
+  cubelets,
+  roobiks,
+  vs,
+  fs,
+  keybinds,
+  cubieKeybinds,
+} from "./cube-data.js"; //new instance of my flagship A 3D RENDERER!
+// import { vs, edges } from "./data.js";
 
-const renderer = new visualizer3d("canvas"); //new instance of my flagship A 3D RENDERER!
+//just inverting the cubie u heard?
+const keyToMove = () =>
+  Object.fromEntries(
+    Object.entries(cubieKeybinds).map(([move, key]) => [
+      key.toUpperCase(),
+      move,
+    ]),
+  );
+
 /*renderer part is just to move the cube */
 const edges = [
   ...new Set(
@@ -14,24 +31,15 @@ const edges = [
     ),
   ),
 ].map((e) => e.split(",").map(Number));
+const faces = fs.map((indices) => ({
+  indices,
+  color: [213, 131, 155],
+}));
+
+renderer.keybinds = keybinds;
 document.addEventListener("keydown", (e) => {
   const key = e.key.toUpperCase();
-  // console.log(key);
-  const moves = {
-    1: "R",
-    2: "L",
-    3: "U",
-    4: "D",
-    5: "F",
-    6: "B",
-    "!": "R'",
-    "@": "L'",
-    "#": "U'",
-    $: "D'",
-    "%": "F'",
-    "^": "B'",
-    "'": "`",
-  };
+  const moves = keyToMove();
   if (key in moves) {
     roobiks.rotate(moves[key]);
   }
@@ -44,23 +52,29 @@ function frame() {
   roobiks.incrementLayer(); //increments layer
   renderer.updateCamera(); //updates camera
   renderer.startFrame(); //check visualizer.js for more info
-  // for (const cubie of cubelets) {
-  //   //run for all cublets
-  //   const transform = roobiks.getCubieTransform(cubie);
-  //   renderer.drawMesh({
-  //     vertices: cubie.getVertices(),
-  //     edges: cubie.getEdges(),
-  //     faces: cubie.getFaces(),
-  //     rotation: transform.rotation,
-  //     pivot: transform.pivot,
-  //   }); //flagship method 💔💔💔💔
-  // }
+  for (const cubie of cubelets) {
+    //run for all cublets
+    const transform = roobiks.getCubieTransform(cubie);
 
-  renderer.drawWireframe({
-    vertices: vs,
-    edges: edges,
-    //translation: { x: 0, y: 0, z: 5 },
-  });
+    // console.log(transform.pivot);
+    if (!renderer.wireframe) {
+      renderer.drawMesh({
+        vertices: cubie.getVertices(),
+        edges: cubie.getEdges(),
+        faces: cubie.getFaces(),
+        rotation: transform.rotation,
+        pivot: transform.pivot,
+      }); //flagship method 💔💔💔💔
+    } else {
+      renderer.drawWireframe({
+        vertices: cubie.getVertices(),
+        edges: cubie.getEdges(),
+        rotation: transform.rotation,
+        pivot: transform.pivot,
+      });
+    }
+  }
+
   renderer.endFrame();
   requestAnimationFrame(frame); //renderer makes the animation run at local display refresh rate!!!
 }
