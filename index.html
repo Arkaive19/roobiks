@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Roobiks</title>
     <script type="module" src="index.js" defer></script>
+    <script type="module" src="popup.js" defer></script>
     <script type="module" src="./lib/freecam.js" defer></script>
+
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="overlay.css" />
+    <link rel="stylesheet" href="popup-content.css" />
   </head>
   <body>
     <div class="overlay cflex">
@@ -37,6 +40,12 @@
         <button class="information">Information</button>
         <button class="scramble">Scramble</button>
         <button class="solve">Solve</button>
+      </div>
+      <div class="popup-overlay"></div>
+      <div class="popup">
+        <button class="close">✖</button>
+        <div class="title">PLACE_HOLDER</div>
+        <div class="content-popup"></div>
       </div>
     </div>
   </body>

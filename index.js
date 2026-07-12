@@ -9,8 +9,10 @@ const timing = {
   disappear: 1400,
   finish: 2000,
 };
+const popup = document.querySelector(".popup");
 
 document.addEventListener("DOMContentLoaded", () => {
+  popup.style.display = "none";
   const overlay = document.querySelector(".overlay");
   const content = document.querySelector(".content");
   const polygon = document.querySelector(".hex-border polygon");
@@ -31,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }, timing.disappear);
 
   setTimeout(() => {
-    // console.log("Animation finished");
     content.style.display = "block";
   }, timing.finish);
 });
@@ -42,3 +43,4 @@ document.querySelector(".solve").addEventListener("click", () => {
 document.querySelector(".scramble").addEventListener("click", () => {
   roobiks.scramble();
 });
+document.querySelector(".information").addEventListener("click", () => {});
