@@ -42,6 +42,8 @@ To be transparent, AI was used only as a development aid for:
 - Looking up html5 canvas queries and syntax
 - Debugging issues during development
 - Researching actual cubing methods, algorithms and theory.
+- Optimization questions and queries. (Lots of them)
+- Add a fps counter (never worked with requestAnimationFrame() before)
 
 The application's design, implementation, features, and overall architecture were created by me.
 

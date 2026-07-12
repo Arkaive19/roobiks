@@ -29,6 +29,11 @@ class visualizer3d {
       yaw: 0,
       pitch: 0,
     };
+    this._viewX = null;
+    this._viewY = null;
+    this._viewZ = null;
+    this._viewDepth = null;
+    this._bgColor32 = 0;
     this.keys = {};
     this.keybinds = {
       keyForward: "w",
@@ -98,6 +103,28 @@ class visualizer3d {
     this.camera.yaw = 0;
     this.camera.pitch = 0;
   };
+
+  _ensureVertexBuffers(n) {
+    if (!this._viewX || this._viewX.length < n) {
+      const size = Math.max(n, this._viewX ? this._viewX.length * 2 : n);
+      this._viewX = new Float32Array(size);
+      this._viewY = new Float32Array(size);
+      this._viewZ = new Float32Array(size);
+      this._viewDepth = new Float32Array(size);
+    }
+  }
+
+  _setPixel(idx, r, g, b, a = 255) {
+    const pixel = idx * 4;
+    if (this._u32Buffer) {
+      this._u32Buffer[idx] = (a << 24) | (b << 16) | (g << 8) | r;
+    } else {
+      this.frameBuffer[pixel] = r;
+      this.frameBuffer[pixel + 1] = g;
+      this.frameBuffer[pixel + 2] = b;
+      this.frameBuffer[pixel + 3] = a;
+    }
+  }
   cameraSetup = () => {
     this.canvasEl.addEventListener("contextmenu", (e) => e.preventDefault());
     this.canvasEl.addEventListener(
@@ -161,11 +188,15 @@ z
     this.zBufferClear();
     this.canvas.fillStyle = "#101010";
     this.canvas.fillRect(0, 0, this.canvasEl.width, this.canvasEl.height);
-    for (let i = 0; i < this.frameBuffer.length; i += 4) {
-      this.frameBuffer[i] = 16;
-      this.frameBuffer[i + 1] = 16;
-      this.frameBuffer[i + 2] = 16;
-      this.frameBuffer[i + 3] = 255;
+    if (this._u32Buffer) {
+      this._u32Buffer.fill(this._bgColor32);
+    } else if (this.frameBuffer) {
+      for (let i = 0; i < this.frameBuffer.length; i += 4) {
+        this.frameBuffer[i] = 16;
+        this.frameBuffer[i + 1] = 16;
+        this.frameBuffer[i + 2] = 16;
+        this.frameBuffer[i + 3] = 255;
+      }
     }
   };
 
@@ -177,6 +208,15 @@ z
     this.depthBuffer = new Float32Array(bigger * bigger).fill(Infinity);
     this.imageData = this.canvas.createImageData(bigger, bigger);
     this.frameBuffer = this.imageData.data;
+    try {
+      this._u32Buffer = new Uint32Array(this.frameBuffer.buffer);
+      // pack RGBA into 32-bit little-endian value: A<<24 | B<<16 | G<<8 | R
+      this._bgColor32 = (255 << 24) | (16 << 16) | (16 << 8) | 16;
+      this._u32Buffer.fill(this._bgColor32);
+    } catch (e) {
+      this._u32Buffer = null;
+      this._bgColor32 = 0;
+    }
     this.clear();
   };
 
@@ -197,11 +237,7 @@ z
       this.depthBuffer[index] = z;
 
       const pixel = index * 4;
-
-      this.frameBuffer[pixel] = 24;
-      this.frameBuffer[pixel + 1] = 213;
-      this.frameBuffer[pixel + 2] = 131;
-      this.frameBuffer[pixel + 3] = 255;
+      this._setPixel(index, 24, 213, 131, 255);
     }
   };
 
@@ -245,11 +281,7 @@ z
         this.depthBuffer[index] = z;
 
         const pixel = index * 4;
-
-        this.frameBuffer[pixel] = 24;
-        this.frameBuffer[pixel + 1] = 213;
-        this.frameBuffer[pixel + 2] = 131;
-        this.frameBuffer[pixel + 3] = 255;
+        this._setPixel(index, 24, 213, 131, 255);
       }
     }
   }
@@ -396,18 +428,7 @@ z
           /*THIS is z-index rendering */
           if (z < this.depthBuffer[idx]) {
             this.depthBuffer[idx] = z;
-            /*This is similar,
-             depthBuffer stored 1 value per pixel, we store 4 values RGBA per pixel
-             so pixel P0 occupies 0,1,2,3 position of frameBuffer, then
-             what must be the R channel of pixel Pn? 
-             its simple this is also stored in sections but 4x as long as depth buffer
-             so same analogy, but multiply with 4 times! */
-            const pixel = idx * 4;
-
-            this.frameBuffer[pixel] = red;
-            this.frameBuffer[pixel + 1] = green;
-            this.frameBuffer[pixel + 2] = blue;
-            this.frameBuffer[pixel + 3] = 255;
+            this._setPixel(idx, red, green, blue, 255);
           }
         }
       }
@@ -600,13 +621,11 @@ z
 
     const n = vertices.length;
     const NEAR = 0.01;
-    const proj = this.project.bind(this);
-    const faceDraw = this.face.bind(this);
-    const fitScreen = this.cartesianGrapher.bind(this);
-    const viewdepth = new Float32Array(n);
-    const viewX = new Float32Array(n);
-    const viewY = new Float32Array(n);
-    const viewZ = new Float32Array(n);
+    this._ensureVertexBuffers(n);
+    const viewdepth = this._viewDepth;
+    const viewX = this._viewX;
+    const viewY = this._viewY;
+    const viewZ = this._viewZ;
 
     for (let i = 0; i < n; i++) {
       /*Although this may look like ooga booga magic,
@@ -673,7 +692,7 @@ z
         console.warn("Invalid face index", face);
         continue;
       }
-      const intersectionNearFace = (vIn, vOut) => {
+      const intersectionNearFace = (inX, inY, inZ, outX, outY, outZ) => {
         /*lets make the intersection!
         as we know the near plane is NEAR=0.01
         lets say our inside point is (1,2,3) and outside point is (1,2,-3)
@@ -702,17 +721,17 @@ z
 
       L(t)=vIn+( 0.01-vInz/Dz)(vIn-vOut) which is when the intersection with near plane happens!
         */
-        const t = (NEAR - vIn.z) / (vOut.z - vIn.z);
+        const t = (NEAR - inZ) / (outZ - inZ);
         return {
-          x: vIn.x + t * (vOut.x - vIn.x),
-          y: vIn.y + t * (vOut.y - vIn.y),
+          x: inX + t * (outX - inX),
+          y: inY + t * (outY - inY),
           z: NEAR,
         };
       };
 
-      const toScreen = (v) => {
-        const p = fitScreen(proj(v.x, v.y, v.z));
-        p.z = v.z;
+      const toScreen = (x, y, z) => {
+        const p = this.cartesianGrapher(this.project(x, y, z));
+        p.z = z;
         return p;
       };
       const x1 = viewX[f[0]];
@@ -751,77 +770,69 @@ z
        inside or outside the near plane. from here we can either
        - not draw if it is outside
        - recompute a new triangle to be inside */
-      const insideNearPlane = [];
-      const outsideNearPlane = [];
-
-      /*This step is asking if the z index (the distance from you to the object)
-      is lying inside or outside the near plane, the >= is intentional cause lying on the
-      near plane is considered inside because near plane is a little further from our eye  */
-      z1 >= NEAR
-        ? insideNearPlane.push({ x: x1, y: y1, z: z1 })
-        : outsideNearPlane.push({ x: x1, y: y1, z: z1 });
-      z2 >= NEAR
-        ? insideNearPlane.push({ x: x2, y: y2, z: z2 })
-        : outsideNearPlane.push({ x: x2, y: y2, z: z2 });
-      z3 >= NEAR
-        ? insideNearPlane.push({ x: x3, y: y3, z: z3 })
-        : outsideNearPlane.push({ x: x3, y: y3, z: z3 });
-
-      const totalInside = insideNearPlane.length;
+      const in1 = z1 >= NEAR;
+      const in2 = z2 >= NEAR;
+      const in3 = z3 >= NEAR;
+      const totalInside = (in1 ? 1 : 0) + (in2 ? 1 : 0) + (in3 ? 1 : 0);
       //if all points are outside skip
       if (totalInside == 0) continue;
-      /*if only one point inside the near plane, then draw the point but then find the
-       near plane intersection of the edges made by the other 2 points */
 
       if (totalInside == 1) {
-        const inV = insideNearPlane[0];
-
-        const outV1 = intersectionNearFace(inV, outsideNearPlane[0]);
-        const outV2 = intersectionNearFace(inV, outsideNearPlane[1]);
-
-        const pIn = toScreen(inV);
-        const pOut1 = toScreen(outV1);
-        const pOut2 = toScreen(outV2);
-
-        faceDraw(pIn, pOut1, pOut2, r, g, b);
+        if (in1) {
+          const out1 = intersectionNearFace(x1, y1, z1, x2, y2, z2);
+          const out2 = intersectionNearFace(x1, y1, z1, x3, y3, z3);
+          const pIn = toScreen(x1, y1, z1);
+          const pOut1 = toScreen(out1.x, out1.y, out1.z);
+          const pOut2 = toScreen(out2.x, out2.y, out2.z);
+          this.face(pIn, pOut1, pOut2, r, g, b);
+        } else if (in2) {
+          const out1 = intersectionNearFace(x2, y2, z2, x1, y1, z1);
+          const out2 = intersectionNearFace(x2, y2, z2, x3, y3, z3);
+          const pIn = toScreen(x2, y2, z2);
+          const pOut1 = toScreen(out1.x, out1.y, out1.z);
+          const pOut2 = toScreen(out2.x, out2.y, out2.z);
+          this.face(pIn, pOut1, pOut2, r, g, b);
+        } else {
+          const out1 = intersectionNearFace(x3, y3, z3, x1, y1, z1);
+          const out2 = intersectionNearFace(x3, y3, z3, x2, y2, z2);
+          const pIn = toScreen(x3, y3, z3);
+          const pOut1 = toScreen(out1.x, out1.y, out1.z);
+          const pOut2 = toScreen(out2.x, out2.y, out2.z);
+          this.face(pIn, pOut1, pOut2, r, g, b);
+        }
       }
 
-      /*
-  Two vertices are inside.
-  The clipped triangle becomes a quad, which we split into two triangles:
-
-        inV1 -------- inV2
-          \            \
-           \            \
-          outV1 ------- outV2
-
-  triangles:
-      inV1 -> inV2 -> outV1
-      inV2 -> outV2 -> outV1
-*/
-
       if (totalInside == 2) {
-        const inV1 = insideNearPlane[0];
-        const inV2 = insideNearPlane[1];
-
-        const outV1 = intersectionNearFace(inV1, outsideNearPlane[0]);
-        const outV2 = intersectionNearFace(inV2, outsideNearPlane[0]);
-
-        const pIn1 = toScreen(inV1);
-        const pIn2 = toScreen(inV2);
-        const pOut1 = toScreen(outV1);
-        const pOut2 = toScreen(outV2);
-
-        faceDraw(pIn1, pIn2, pOut1, r, g, b);
-        faceDraw(pIn2, pOut2, pOut1, r, g, b);
+        if (!in1) {
+          // in2 and in3
+          const out = intersectionNearFace(x2, y2, z2, x1, y1, z1);
+          const pIn1 = toScreen(x2, y2, z2);
+          const pIn2 = toScreen(x3, y3, z3);
+          const pOut = toScreen(out.x, out.y, out.z);
+          this.face(pIn1, pIn2, pOut, r, g, b);
+        } else if (!in2) {
+          // in1 and in3
+          const out = intersectionNearFace(x1, y1, z1, x2, y2, z2);
+          const pIn1 = toScreen(x1, y1, z1);
+          const pIn2 = toScreen(x3, y3, z3);
+          const pOut = toScreen(out.x, out.y, out.z);
+          this.face(pIn1, pIn2, pOut, r, g, b);
+        } else {
+          // !in3 -> in1 and in2
+          const out = intersectionNearFace(x1, y1, z1, x3, y3, z3);
+          const pIn1 = toScreen(x1, y1, z1);
+          const pIn2 = toScreen(x2, y2, z2);
+          const pOut = toScreen(out.x, out.y, out.z);
+          this.face(pIn1, pIn2, pOut, r, g, b);
+        }
       }
 
       //if all points inside the near plane draw em.
       if (totalInside == 3) {
-        faceDraw(
-          toScreen({ x: x1, y: y1, z: z1 }),
-          toScreen({ x: x2, y: y2, z: z2 }),
-          toScreen({ x: x3, y: y3, z: z3 }),
+        this.face(
+          toScreen(x1, y1, z1),
+          toScreen(x2, y2, z2),
+          toScreen(x3, y3, z3),
           r,
           g,
           b,
@@ -868,9 +879,10 @@ z
     const camY = cam.y;
     const camZ = cam.z;
 
-    const viewX = new Float32Array(vertices.length);
-    const viewY = new Float32Array(vertices.length);
-    const viewZ = new Float32Array(vertices.length);
+    this._ensureVertexBuffers(vertices.length);
+    const viewX = this._viewX;
+    const viewY = this._viewY;
+    const viewZ = this._viewZ;
 
     for (let i = 0, n = vertices.length; i < n; i++) {
       let { x, y, z } = vertices[i];
@@ -984,7 +996,7 @@ z
     let ny = uz * vx - ux * vz;
     let nz = ux * vy - uy * vx;
 
-    const len = Math.hypot(nx, ny, nz);
+    const len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
 
     nx /= len;
     ny /= len;
