@@ -48,6 +48,23 @@ document.addEventListener("keydown", (e) => {
   if (key == "R") roobiks.reset();
   if (key === "V") renderer.wireframe = !renderer.wireframe;
 });
+// --- FPS meter ---
+const _fpsEl = document.createElement("div");
+_fpsEl.style.position = "fixed";
+_fpsEl.style.right = "8px";
+_fpsEl.style.top = "8px";
+_fpsEl.style.padding = "6px 8px";
+_fpsEl.style.background = "rgba(0,0,0,0.6)";
+_fpsEl.style.color = "#0f0";
+_fpsEl.style.fontFamily = "monospace";
+_fpsEl.style.fontSize = "12px";
+_fpsEl.style.zIndex = 9999;
+_fpsEl.style.borderRadius = "6px";
+document.body.appendChild(_fpsEl);
+let _fpsLast = performance.now();
+let _fpsFrames = 0;
+let _fpsLastDisplay = performance.now();
+
 /*Ive explained why getCubie transformed and incrementLayer are here check out cubies.js */
 function frame() {
   roobiks.incrementLayer(); //increments layer
@@ -93,6 +110,19 @@ function frame() {
   }
 
   renderer.endFrame();
+  // FPS measurement and display (update display every 250ms)
+  _fpsFrames++;
+  const now = performance.now();
+  const elapsed = now - _fpsLastDisplay;
+  if (elapsed >= 250) {
+    const fps = Math.round((_fpsFrames * 1000) / (now - _fpsLast));
+    _fpsEl.textContent = fps + " FPS";
+    _fpsEl.style.color = fps < 30 ? "#f66" : fps < 55 ? "#ffb86b" : "#7cff7c";
+    _fpsLast = now;
+    _fpsFrames = 0;
+    _fpsLastDisplay = now;
+  }
+
   requestAnimationFrame(frame); //renderer makes the animation run at local display refresh rate!!!
 }
 
