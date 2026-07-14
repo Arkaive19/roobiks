@@ -1,3 +1,6 @@
+/*At the start of this project, i did not expect this class to get this big this fast, but it was a great learning experience
+and im pretty proud with my mini cpu rasterizer. ill try to make a video explaining everything thats going on (Althought the comments explain everything imo)
+ */
 class visualizer3d {
   constructor(selector) {
     this.canvasEl =
@@ -125,12 +128,58 @@ class visualizer3d {
       this.frameBuffer[pixel + 3] = a;
     }
   }
+
   cameraSetup = () => {
+    const style = document.createElement("style");
+    style.id = "startHudStyles";
+    style.textContent = `
+      #startHud {
+        position: absolute;
+        inset: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        background: rgba(40, 40, 40, 0.55);
+        backdrop-filter: blur(2px);
+
+        color: white;
+        font-family: sans-serif;
+        text-align: center;
+
+        cursor: pointer;
+        user-select: none;
+      }
+
+      #startHud.hidden {
+        display: none;
+      }
+    `;
+    document.head.appendChild(style);
+
+    this.startHud = document.createElement("div");
+    this.startHud.id = "startHud";
+    this.startHud.innerHTML = `
+    <h1>Click to Start Exploring</h1>
+    <p>WASD to move • Mouse to look around</p>
+  `;
+    this.canvasEl.parentElement.appendChild(this.startHud);
+
     this.canvasEl.addEventListener("contextmenu", (e) => e.preventDefault());
-    this.canvasEl.addEventListener(
-      "mousedown",
-      (e) => e.button == 0 && this.canvasEl.requestPointerLock(),
-    );
+
+    this.startHud.addEventListener("mousedown", (e) => {
+      if (e.button === 0) {
+        this.canvasEl.requestPointerLock();
+      }
+    });
+    document.addEventListener("pointerlockchange", () => {
+      this.startHud.classList.toggle(
+        "hidden",
+        document.pointerLockElement === this.canvasEl,
+      );
+    });
     document.addEventListener("mousemove", (e) => {
       if (document.pointerLockElement !== this.canvasEl) return;
 
@@ -138,16 +187,16 @@ class visualizer3d {
       this.camera.pitch += e.movementY * 0.004;
 
       const limit = Math.PI / 2 - 0.01;
+      1;
 
       this.camera.pitch = Math.max(-limit, Math.min(limit, this.camera.pitch));
     });
   };
-
   cameraTransform = ({ x, y, z }) => {
     /*In my time making this, this is byfar the coolest maths i have had to do.
     Basically, the camera is ALWAYS the center of the world at all times. Even though the
     relative projection of the world is the same, when we move; EVERYTHING moves.
-z
+
     basically;
       move mouse left right --> rotation in XZ plane
       move mouse up down --> rotation in YZ plane

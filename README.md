@@ -2,7 +2,9 @@
 
 # Roobiks
 
-A Javascript Software 3D renderer!
+A Javascript Software 3D renderer made from scratch!
+
+[@TSCODING]()
 
 https://github.com/user-attachments/assets/bcc9686c-523e-42bf-a0b8-797385fa876c
 
@@ -20,9 +22,7 @@ press shift and the numerals to do a ' move. SHIFT+1(!)=>R' etc
 
 ## Overview
 
-Roobiks is a personal project ive been wanting to try to simualte how 3d graphics is actually rendered. [@TSCODING](https://www.youtube.com/watch?v=qjWkNZ0SXfo)
-
-**Roobiks** is a greater implementation including simple shading etc
+Roobiks is a personal project ive been wanting to try to simualte how 3d graphics is actually rendered. This video by [@TSCODING](https://www.youtube.com/watch?v=qjWkNZ0SXfo) was a great inspiration for me to get involved and start this project in general!
 
 ## Features
 
@@ -50,16 +50,20 @@ To be transparent, AI was used only as a development aid for:
 - Optimization questions and queries. (Lots of them)
 - Add a fps counter (never worked with requestAnimationFrame() before)
 
-The application's design, implementation, features, and overall architecture were created by me.
+The application's design, implementation, features, and overall architecture were created by me. 😊
 
 ## Installation
 
+(I HIGHLY reccomend installing this if u really wanna learn how rasterization works, i dont claim to be "all knowing" but i think ive
+explained things with comments to an extent where anyone can understand what's going on. but ofcourse, do check out)
 installation is very easy and simple; just clone the repo and serve with either
 
 ```zsh
 npx serve
+http-server
+# whatever serving tool you have
 ```
 
 or other serving tools, or more conviniently check my project out the github Repo
-
-Currently roobiks is only a concept, in the near future i could ship it as a desktop electron app to play around with!
+Roobiks has reached a stage where im forced on a wall of cpu rasterization, and html5 canvas methods can no longer
+be used for complex meshes and stuff.
