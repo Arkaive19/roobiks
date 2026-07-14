@@ -2,6 +2,8 @@
 
 * {
   font-family: "Comic Relief", system-ui;
+  --accent: #2472c8;
+  --text: #ececec;
 }
 
 html,
@@ -113,4 +115,31 @@ body {
   grid-row: 2/3;
   grid-column: 1/-1;
   overflow-y: auto;
+}
+
+button {
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background-color: transparent;
+  color: var(--text);
+  margin: 5px;
+  padding: 7px;
+  transform: translate(0, 0);
+  box-shadow: 0 0 0 var(--secondary);
+  transition:
+    transform 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
+}
+
+button:hover {
+  transform: translate(-5px, -5px);
+  box-shadow: 5px 5px 0 var(--accent);
+}
+
+.btn-alt {
+  border: 3px solid var(--accent);
+  background-color: transparent;
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  font-size: 1.3rem;
 }
