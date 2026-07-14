@@ -1,13 +1,8 @@
-
-
 # Roobiks
 
 A Javascript Software 3D renderer made from scratch!
 
-[@TSCODING]()
-
 https://github.com/user-attachments/assets/bcc9686c-523e-42bf-a0b8-797385fa876c
-
 
 Click on the canvas to start moving around,
 WASD and mouse to look around.
