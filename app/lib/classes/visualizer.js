@@ -99,6 +99,7 @@ class visualizer3d {
     if (this.keys[keyDown]) this.camera.y -= speed;
   }
 
+  /*If you see random methods, that are good enough to be inlined, remember optimization is pain 💔💔💔 */
   cameraReset = () => {
     this.camera.x = 0;
     this.camera.y = 0;
@@ -107,6 +108,7 @@ class visualizer3d {
     this.camera.pitch = 0;
   };
 
+  /*Optimization shaenanigans, this part just declares the camear  */
   _ensureVertexBuffers(n) {
     if (!this._viewX || this._viewX.length < n) {
       const size = Math.max(n, this._viewX ? this._viewX.length * 2 : n);
@@ -117,6 +119,7 @@ class visualizer3d {
     }
   }
 
+  /*Draw Buffer method  the _u32buffer just has a 32 bit rgba data stored inside it */
   _setPixel(idx, r, g, b, a = 255) {
     const pixel = idx * 4;
     if (this._u32Buffer) {
@@ -130,6 +133,7 @@ class visualizer3d {
   }
 
   cameraSetup = () => {
+    /*Creating a HUD on top of our canvas, inlining this is better because we want it to work anywhere uk */
     const style = document.createElement("style");
     style.id = "startHudStyles";
     style.textContent = `
@@ -192,6 +196,7 @@ class visualizer3d {
       this.camera.pitch = Math.max(-limit, Math.min(limit, this.camera.pitch));
     });
   };
+
   cameraTransform = ({ x, y, z }) => {
     /*In my time making this, this is byfar the coolest maths i have had to do.
     Basically, the camera is ALWAYS the center of the world at all times. Even though the
@@ -233,6 +238,8 @@ class visualizer3d {
     };
   };
 
+  /*Just clears the buffers and canvas and everything involved, also if you wanna use this for any reason,
+  highly reccomended to pass a rgb value so u can fill in the canvas however u want */
   clear = () => {
     this.zBufferClear();
     this.canvas.fillStyle = "#101010";
@@ -249,6 +256,8 @@ class visualizer3d {
     }
   };
 
+  /*Canvas resize is just resetting everything that needs buffer or pixels or size or basically anything with the canvas itself */
+
   canvasResize = () => {
     const dpr = window.devicePixelRatio || 1;
     const bigger = Math.max(window.innerHeight * dpr, window.innerWidth * dpr);
@@ -259,9 +268,61 @@ class visualizer3d {
     this.frameBuffer = this.imageData.data;
     try {
       this._u32Buffer = new Uint32Array(this.frameBuffer.buffer);
-      // pack RGBA into 32-bit little-endian value: A<<24 | B<<16 | G<<8 | R
+      /* pack RGBA into 32-bit little-endian value: A<<24 | B<<16 | G<<8 | R 
+          ######THIS PART IS VERY NERDY STUFF SO LISTEN UP #####
+          remember how C,C++ pointers work? were revisiting that idea here;
+          Uint32Array stores 4 byte at a time;
+          Uint8array stores 1 byte at a time;
+
+          Soooooo, instead of doing the old flatmapped width*n+height for pixels bs, we js store the entire rgba value in a Uint32array by combining,
+          their bits
+          (255 << 24) | (16 << 16) | (16 << 8) | 16;
+          this may look like bullshit but hear me out.
+          RGBA stores 255,255,255,255 for each value. why do stupid shit like that when hex is just one number?
+          HEX is XXXXXXXX. our canvas color in default is 16,16,16,255. so what we do is store it as #AARRGGBBz
+          if u have (r,g,b,a) in rgba and want hex codes; js do r/16;b/16;g/16;a/16
+
+          also, btw << means binary left shift operator (i learnt abt this in my cli project hkse ages ago)
+             lets say decimal 10 needs to shifted left by 3 digits, what we do is 10*10^3;
+             similarly, in decimal left shifting by n is js *2^n but the syntax is <<
+        
+             also if x0AARRGGBB is js 6 numerals why do we left shift by 25 and 16 and 8?
+             listen up bronachos;
+          Uint32Array made with the buffer from frameBuffer has the same size as every pixel on canvas,
+          and were storing color for every pixel, and in every reading, theres 32 bits stores!
+
+          that is why
+
+          every Uint32Array index looks like
+          00000000   00000000   00000000   00000000
+          hence, we want AARRGGBB we must put the correct binary codes in their place.
+
+           (255 << 24) pushes an index
+
+           11111111 00000000 00000000 00000000
+           
+           (16 << 16) pushes an index 
+
+           00000000 00010000 00000000 00000000
+
+           (16 << 8) pushes an index
+
+           00000000 00000000 00010000 00000000
+             
+           (16) pushes an index
+
+           00000000 00000000  00000000 00010000
+
+           The binary operator | adds all of em together to give
+
+           11111111 00010000 00010000 00010000
+
+           x0AARRGGBB (easier to read)
+
+
+      */
       this._bgColor32 = (255 << 24) | (16 << 16) | (16 << 8) | 16;
-      this._u32Buffer.fill(this._bgColor32);
+      this._u32Buffer.fill(this._bgColor32); //fills with the 32 bit rgba code
     } catch (e) {
       this._u32Buffer = null;
       this._bgColor32 = 0;
@@ -269,6 +330,7 @@ class visualizer3d {
     this.clear();
   };
 
+  /*Pretty intuitive to think about, if its infinitely far it has the least priority, we draw whats the most front */
   zBufferClear() {
     this.depthBuffer.fill(Infinity);
   }
@@ -824,6 +886,10 @@ class visualizer3d {
       const in3 = z3 >= NEAR;
       const totalInside = (in1 ? 1 : 0) + (in2 ? 1 : 0) + (in3 ? 1 : 0);
       //if all points are outside skip
+
+      //front face clipping :joy: its js cases on top of cases
+      /*Also, the comments ive given below should give a basic idea why were stacking shit,
+      common sense 😓😓 */
       if (totalInside == 0) continue;
 
       if (totalInside == 1) {
@@ -890,6 +956,7 @@ class visualizer3d {
     }
   }
 
+  /*Give me justice, give me fire, do NOT give me more inlining */
   drawWireframe({
     vertices = [],
     edges = [],
@@ -1018,6 +1085,10 @@ class visualizer3d {
     }
   }
 
+  /*Lambert Lighting we js assume light is coming from a far away point, somwhere z=-sum and just brighten or dim it
+  based on the if the triangular face is looking at what angle to the light source, as always nerdy maths, im not gonna explain this
+  because lambert lighting is a interesting property byitself and highly reccomended to checkout by people themselves*/
+
   shading(face, viewX, viewY, viewZ) {
     const [i0, i1, i2] = face.indices;
 
@@ -1064,6 +1135,7 @@ class visualizer3d {
     ];
   }
 
+  /*Just a simple pipeline to draw meshes  */
   startFrame() {
     this.clear();
   }
