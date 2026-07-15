@@ -1,3 +1,5 @@
+/*If youre reading this file dont lok at most of this stuff, its js standard stuff what i do want you to look at is the frame() function */
+
 import visualizer3d from "./classes/visualizer.js";
 import {
   renderer,
@@ -65,18 +67,23 @@ let _fpsFrames = 0;
 let _fpsLastDisplay = performance.now();
 
 /*Ive explained why getCubie transformed and incrementLayer are here check out cubies.js */
+/*requestNextAnimationFrame(frame) is what runs this animation at your refresh rate
+were generating based on cubies here so each cubie can be drawn
+also, theres a if statement to draw either the cube or the penguin mesh, but more importantly
+ */
 function frame() {
-  roobiks.incrementLayer(); //increments layer
   renderer.updateCamera(); //updates camera
-  renderer.startFrame(); //check visualizer.js for more info
+  renderer.startFrame(); //check visualizer.js for more info **basically just clears the canvas
   // const t0 = performance.now();
   if (modalCubie == "cube") {
+    roobiks.incrementLayer(); //increments layers if a rotation is done
     for (const cubie of cubelets) {
       //run for all cublets
       const transform = roobiks.getCubieTransform(cubie);
 
       if (!renderer.wireframe) {
         // console.log(transform.pivot);
+        //draws faces
         renderer.drawMesh({
           vertices: cubie.getVertices(),
           edges: cubie.getEdges(),
@@ -85,6 +92,7 @@ function frame() {
           pivot: transform.pivot,
         }); //flagship method 💔💔💔💔
       } else {
+        //draws wireframe
         renderer.drawWireframe({
           vertices: cubie.getVertices(),
           edges: cubie.getEdges(),
@@ -93,7 +101,9 @@ function frame() {
         });
       }
     }
-  } else {
+  }
+  //penguin mesh
+  else {
     if (!renderer.wireframe) {
       // console.log(transform.pivot);
       renderer.drawMesh({
@@ -109,7 +119,7 @@ function frame() {
     }
   }
   // console.log(performance.now() - t0);
-  renderer.endFrame();
+  renderer.endFrame(); //draws the mesh based on frame Buffer and z indexing buahahahahah
   // FPS measurement and display (update display every 250ms)
   _fpsFrames++;
   const now = performance.now();
@@ -122,6 +132,8 @@ function frame() {
     _fpsFrames = 0;
     _fpsLastDisplay = now;
   }
+
+  //fps thing i didnt know how to do shit with requestAnimationFrame() so this is heavily ai genned, js translated into my language
 
   requestAnimationFrame(frame); //renderer makes the animation run at local display refresh rate!!!
 }

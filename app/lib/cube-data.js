@@ -1,8 +1,10 @@
+/*vs and fs are the penguin mesh (huge ik) */
 import Roobiks from "./classes/cubies.js";
 import visualizer3d from "./classes/visualizer.js";
 export const roobiks = new Roobiks();
 export const cubelets = roobiks.cubelets;
 export const renderer = new visualizer3d("canvas");
+/*default keybinds */
 export const keybinds = {
   keyForward: "w",
   keyBack: "s",
