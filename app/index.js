@@ -1,4 +1,7 @@
 import { roobiks, modalCubie, setModalCubie } from "./lib/cube-data.js";
+
+//make btns work
+
 let visible = false;
 let hexAnimated = false;
 let fadeOut = false;

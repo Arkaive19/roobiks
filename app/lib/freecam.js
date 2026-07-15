@@ -86,7 +86,6 @@ function frame() {
         //draws faces
         renderer.drawMesh({
           vertices: cubie.getVertices(),
-          edges: cubie.getEdges(),
           faces: cubie.getFaces(),
           rotation: transform.rotation,
           pivot: transform.pivot,

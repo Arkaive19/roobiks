@@ -694,7 +694,6 @@ class visualizer3d {
 
   drawMesh({
     vertices = [],
-    edges = [],
     faces = [],
     translation = { x: 0, y: 0, z: 0 },
     rotation = {
